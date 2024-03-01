@@ -3,6 +3,7 @@
 
 
 from vedo import *
+import math
 
 def RotationMatrix(theta, axis_name):
   """ calculate single rotation of $theta$ matrix around x,y or z
@@ -176,16 +177,26 @@ def getLocalFrameMatrix(R_ij, t_ij):
 
 def main():
     
-    angles = [[0, -30, 20, -60],
+    angles_set = [[0, -30, 20, -60],
               [30, -55, 40, -80],
               [50, -70, 60, -90]]
     l1, l2, l3, l4 = 1.8, 6, 4, 4
+    start_angles = [0, -30, 20, -60]
+    target_angles = [50, -85, 60, -10]
 
     # Set the limits of the graph x, y, and z ranges
     axes = Axes(xrange=(0,20), yrange=(-2,10), zrange=(0,6))
 
-    
-    for phi in angles:
+    time_index = 0
+
+    while(True):
+        
+        loop = (cos(time_index) + 1)/2
+        angles = [0,0,0,0]
+        for i in range(len(angles)):
+            angles[i] = start_angles[i] * loop + target_angles[i] * (1 - loop)
+        
+        phi = np.array(angles)
         T_01, T_02, T_03, T_04, e = forward_kinematics(phi, l1, l2, l3, l4)
 
         base_frameArrows = createCoordinateFrameMesh()
@@ -204,10 +215,19 @@ def main():
 
         end_effector = createCoordinateFrameMesh()
         end_effector.apply_transform(e)
+        
 
 
         # Show everything 
-        show([base_frame, frame2, frame3, frame4, end_effector], axes, viewup="z").close()
+        plt = show([base_frame, frame2, frame3, frame4, end_effector], axes, viewup="z", offscreen=False, interactive=False)#.close()
+        plt.remove(axes)
+        plt.remove(base_frame)
+        plt.remove(frame2)
+        plt.remove(frame3)
+        plt.remove(frame4)
+        plt.remove(end_effector)
+
+        time_index += 0.1
 
 
 if __name__ == '__main__':
